@@ -1,5 +1,8 @@
 import DAO.CurrencyDAO;
 import DAO.CurrencyExchangeDAO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import utils.ConnectionPool;
 
@@ -12,8 +15,9 @@ import java.util.Optional;
 
 public class ExchangeRateDAOTest {
     @Test
-    public void test() throws SQLException {
+    public void test() throws SQLException, JsonProcessingException {
         CurrencyExchangeDAO currencyExchangeDAO = CurrencyExchangeDAO.getInstance();
-        currencyExchangeDAO.getAll();
+        ObjectMapper objectMapper = new ObjectMapper();
+        System.out.println(objectMapper.writeValueAsString(currencyExchangeDAO.getAll()));
     }
 }
