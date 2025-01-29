@@ -24,8 +24,8 @@ public class CurrencyServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter writer = resp.getWriter();
+        String code = req.getPathInfo().substring(1);
         try {
-            String code = req.getPathInfo().substring(1);
             CurrencyDTO currencyDTO = currencyService.get(code);
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(currencyDTO));

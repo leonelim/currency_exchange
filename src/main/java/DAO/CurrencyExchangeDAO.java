@@ -36,6 +36,10 @@ public class CurrencyExchangeDAO {
             INNER JOIN Currencies tc ON ER.TargetCurrencyId = tc.ID
             WHERE BaseCurrencyCode = ? AND TargetCurrencyCode = ?
             """;
+    private static final String SAVE_EXCHANGE_RATE_SQL = """
+            INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate)
+            VALUES (?, ?, ?)
+            """;
     public List<ExchangeRate> getAll() {
         List<ExchangeRate> exchangeRates = new ArrayList<>();
         try (Connection connection = ConnectionPool.get();
@@ -62,6 +66,19 @@ public class CurrencyExchangeDAO {
             return Optional.ofNullable(exchangeRate);
         } catch (SQLException e) {
             throw new DatabaseNotAvailableException("The database could not be accessed");
+        }
+    }
+    public ExchangeRate save(ExchangeRate exchangeRate) {
+        try (Connection connection = ConnectionPool.get();
+             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_EXCHANGE_RATE_SQL)) {
+            preparedStatement.setInt(1, exchangeRate.getBaseCurrency().getId());
+            preparedStatement.setInt(2, exchangeRate.getTargetCurrency().getId());
+            preparedStatement.setBigDecimal(3, exchangeRate.getRate());
+            preparedStatement.executeUpdate();
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            return new ExchangeRate(generatedKeys.getInt("ID"), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
+        } catch (SQLException e) {
+            throw new DatabaseNotAvailableException("The databse could not be accessed");
         }
     }
     private ExchangeRate makeExchangeRate(ResultSet resultSet) throws SQLException {
