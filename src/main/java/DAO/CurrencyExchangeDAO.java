@@ -78,7 +78,7 @@ public class CurrencyExchangeDAO {
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
             return new ExchangeRate(generatedKeys.getInt("ID"), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The databse could not be accessed");
+            throw new DatabaseNotAvailableException("The database could not be accessed");
         }
     }
     private ExchangeRate makeExchangeRate(ResultSet resultSet) throws SQLException {

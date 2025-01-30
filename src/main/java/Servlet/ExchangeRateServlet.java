@@ -5,6 +5,8 @@ import DTO.ExchangeRateDTO;
 import Services.CurrencyExchangeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.DatabaseNotAvailableException;
+import exceptions.ExchangeRateDoesntExistsException;
+import exceptions.InvalidInputException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,13 +27,22 @@ public class ExchangeRateServlet extends HttpServlet {
         String baseCurrencyCode = pathInfo.substring(1, 5);
         String targetCurrencyCode = pathInfo.substring(5);
         try {
-            ExchangeRateDTO exchangeRateDTO = currencyExchangeService.getAndSaveCalculatedExchangeRates(baseCurrencyCode, targetCurrencyCode);
+            ExchangeRateDTO exchangeRateDTO = currencyExchangeService.getExchangeRate(baseCurrencyCode, targetCurrencyCode);
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(exchangeRateDTO));
         } catch (DatabaseNotAvailableException e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
             writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+        } catch (InvalidInputException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+        } catch (ExchangeRateDoesntExistsException e) {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
+            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
         }
+
     }
 }

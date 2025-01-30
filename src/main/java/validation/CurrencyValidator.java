@@ -2,7 +2,7 @@ package validation;
 
 import java.util.regex.Pattern;
 public class CurrencyValidator {
-    private static final Pattern VALID_PATTERN = Pattern.compile("[a-zA-z]+");
+    private static final Pattern VALID_PATTERN = Pattern.compile("\\b[a-zA-Z]+\\b");
     private static final int MIN_NAME_LEN = 3;
     private static final int MAX_NAME_LEN = 30;
     private static final int MAX_SIGN_LEN = 3;
