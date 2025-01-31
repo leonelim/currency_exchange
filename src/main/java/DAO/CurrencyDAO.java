@@ -67,7 +67,10 @@ public class CurrencyDAO {
             preparedStatement.setString(3, currency.getSign());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            return new Currency(generatedKeys.getInt(1), currency.getCode(), currency.getName(), currency.getSign());
+            if (generatedKeys.next()) {
+                currency.setId(generatedKeys.getInt(1));
+            }
+            return currency;
         } catch (SQLException e) {
             throw new DatabaseNotAvailableException("The database could not be accessed");
         }

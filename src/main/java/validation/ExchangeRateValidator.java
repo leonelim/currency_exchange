@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 import java.math.BigDecimal;
 
 public class ExchangeRateValidator {
-    private final Pattern VALID_RATE_PATTEN = Pattern.compile("\\b-?(?:\\d*\\.\\d+ | \\d+\\.?\\d*)\\b");
+    private final Pattern VALID_RATE_PATTEN = Pattern.compile("-?(\\d*\\.\\d+|\\d+\\.?\\d*)");
     private final Pattern VALID_CODE_PATTERN = Pattern.compile("\\b[a-zA-Z]+\\b");
     public boolean isValidCodes(String baseCurrencyCode, String targetCurrencyCode) {
         return baseCurrencyCode.length() == 3 && targetCurrencyCode.length() == 3 &&

@@ -18,7 +18,7 @@ import java.util.Optional;
 public class ExchangeRateDAOTest {
     @Test
     public void test() throws SQLException, JsonProcessingException {
-        ExchangeRateValidator exchangeRateValidator = new ExchangeRateValidator();
-        System.out.println(exchangeRateValidator.isValidRate("123"));
+        System.out.println("/USDEUR".substring(1, 4));
+        System.out.println("/USDEUR".substring(4));
     }
 }

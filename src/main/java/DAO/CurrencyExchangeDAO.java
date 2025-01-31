@@ -5,10 +5,8 @@ import Entity.ExchangeRate;
 import exceptions.DatabaseNotAvailableException;
 import utils.ConnectionPool;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.math.BigDecimal;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +38,11 @@ public class CurrencyExchangeDAO {
             INSERT INTO ExchangeRates (BaseCurrencyId, TargetCurrencyId, Rate)
             VALUES (?, ?, ?)
             """;
+    private static final String UPDATE_SQL = """
+            UPDATE ExchangeRates
+            SET Rate = ?
+            WHERE BaseCurrencyId = (SELECT ID FROM Currencies WHERE Code = ?) AND TargetCurrencyId = (SELECT ID FROM Currencies WHERE Code = ?)
+            """;
     public List<ExchangeRate> getAll() {
         List<ExchangeRate> exchangeRates = new ArrayList<>();
         try (Connection connection = ConnectionPool.get();
@@ -70,13 +73,28 @@ public class CurrencyExchangeDAO {
     }
     public ExchangeRate save(ExchangeRate exchangeRate) {
         try (Connection connection = ConnectionPool.get();
-             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_EXCHANGE_RATE_SQL)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(SAVE_EXCHANGE_RATE_SQL, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setInt(1, exchangeRate.getBaseCurrency().getId());
             preparedStatement.setInt(2, exchangeRate.getTargetCurrency().getId());
             preparedStatement.setBigDecimal(3, exchangeRate.getRate());
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-            return new ExchangeRate(generatedKeys.getInt("ID"), exchangeRate.getBaseCurrency(), exchangeRate.getTargetCurrency(), exchangeRate.getRate());
+            if (generatedKeys.next()) {
+                exchangeRate.setId(generatedKeys.getInt(1));
+            }
+            return exchangeRate;
+        } catch (SQLException e) {
+            throw new DatabaseNotAvailableException("The database could not be accessed");
+        }
+    }
+    public boolean update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+        try (Connection connection = ConnectionPool.get();
+             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)){
+            preparedStatement.setBigDecimal(1, rate);
+            preparedStatement.setString(2, baseCurrencyCode);
+            preparedStatement.setString(3, targetCurrencyCode);
+            int result = preparedStatement.executeUpdate();
+            return result > 0;
         } catch (SQLException e) {
             throw new DatabaseNotAvailableException("The database could not be accessed");
         }
@@ -87,4 +105,5 @@ public class CurrencyExchangeDAO {
                 new Currency(resultSet.getInt("TargetCurrencyId"), resultSet.getString("TargetCurrencyCode"), resultSet.getString("TargetCurrencyFullName"), resultSet.getString("TargetCurrencySign")),
                 resultSet.getBigDecimal("rate"));
     }
+
 }
