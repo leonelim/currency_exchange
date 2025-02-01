@@ -14,6 +14,6 @@ public class ExchangeRateMapper {
         return new ExchangeRateDTO(exchangeRate.getId(), currencyMapper.toDto(exchangeRate.getBaseCurrency()), currencyMapper.toDto(exchangeRate.getTargetCurrency()), exchangeRate.getRate());
     }
     public ExchangeRate toEntity(ExchangeRateDTO exchangeRateDTO) {
-        return new ExchangeRate(exchangeRateDTO.id(), currencyMapper.toEntity(exchangeRateDTO.baseCurrencyDTO()), currencyMapper.toEntity(exchangeRateDTO.targetCurrencyDTO()), exchangeRateDTO.rate());
+        return new ExchangeRate(exchangeRateDTO.id(), currencyMapper.toEntity(exchangeRateDTO.baseCurrency()), currencyMapper.toEntity(exchangeRateDTO.targetCurrency()), exchangeRateDTO.rate());
     }
 }

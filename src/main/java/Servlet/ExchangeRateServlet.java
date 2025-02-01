@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @WebServlet("/exchangeRate/*")
-public class ExchangeRateServlet extends HttpServlet {
+public class ExchangeRateServlet extends HttpServlet implements errorWriter{
     CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -45,17 +45,11 @@ public class ExchangeRateServlet extends HttpServlet {
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(exchangeRateDTO));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (InvalidInputException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         } catch (ExchangeRateDoesntExistsException e) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         }
 
     }
@@ -64,22 +58,17 @@ public class ExchangeRateServlet extends HttpServlet {
     public void doPatch(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PrintWriter writer = resp.getWriter();
         resp.setContentType("application/json");
-        writer.write("111");
         try {
             String path = req.getPathInfo();
             String baseCurrencyCode = path.substring(1, 4);
             String targetCurrencyCode = path.substring(4);
             String rate = req.getParameter("rate");
-            boolean isUpdated = currencyExchangeService.update(baseCurrencyCode, targetCurrencyCode, rate);
-            writer.write(objectMapper.writeValueAsString(isUpdated));
+            ExchangeRateDTO exchangeRate = currencyExchangeService.update(baseCurrencyCode, targetCurrencyCode, rate);
+            writer.write(objectMapper.writeValueAsString(exchangeRate));
         } catch (InvalidInputException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         }
     }
 }

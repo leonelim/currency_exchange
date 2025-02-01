@@ -1,5 +1,5 @@
 package DTO;
 
-public record ErrorResponseDTO(int statusCode, String errorMessage) {
+public record ErrorResponseDTO(String message) {
 
 }

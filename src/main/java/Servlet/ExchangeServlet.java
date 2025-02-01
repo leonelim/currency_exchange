@@ -15,8 +15,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-@WebServlet("/exchange/*")
-public class ExchangeServlet extends HttpServlet {
+@WebServlet("/exchange")
+public class ExchangeServlet extends HttpServlet implements errorWriter {
     CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     ObjectMapper objectMapper = new ObjectMapper();
     @Override
@@ -28,15 +28,11 @@ public class ExchangeServlet extends HttpServlet {
             String amount = req.getParameter("amount");
             resp.setContentType("application/json");
             ExchangeResultDTO exchangeResultDTO = currencyExchangeService.currencyExchange(baseCurrencyCode, targetCurrencyCode, amount);
-            writer.write(objectMapper.writeValueAsString(exchangeResultDTO));
+            writer.write(objectMapper.writeValueAsString(exchangeResultDTO))    ;
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (NoExchangeRateFoundException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         }
     }
 }

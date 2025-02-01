@@ -10,6 +10,7 @@ import validation.ExchangeRateValidator;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,7 +19,6 @@ import java.util.Optional;
 public class ExchangeRateDAOTest {
     @Test
     public void test() throws SQLException, JsonProcessingException {
-        System.out.println("/USDEUR".substring(1, 4));
-        System.out.println("/USDEUR".substring(4));
+        System.out.println(BigDecimal.ONE.divide(new BigDecimal(100), 6, RoundingMode.HALF_UP));
     }
 }

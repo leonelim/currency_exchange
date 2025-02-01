@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @WebServlet("/exchangeRates")
-public class ExchangeRatesServlet extends HttpServlet {
+public class ExchangeRatesServlet extends HttpServlet implements errorWriter {
     private final CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -32,9 +32,7 @@ public class ExchangeRatesServlet extends HttpServlet {
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(exchangeRates));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         }
     }
 
@@ -49,13 +47,9 @@ public class ExchangeRatesServlet extends HttpServlet {
             ExchangeRateDTO exchangeRateDTO = currencyExchangeService.save(baseCurrencyCode, targetCurrencyCode, rate);
             writer.write(objectMapper.writeValueAsString(exchangeRateDTO));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (InvalidInputException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         }
     }
 }

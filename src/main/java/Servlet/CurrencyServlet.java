@@ -3,6 +3,7 @@ package Servlet;
 import DTO.CurrencyDTO;
 import DTO.ErrorResponseDTO;
 import Services.CurrencyService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import exceptions.CurrencyDoesntExistException;
 import exceptions.DatabaseNotAvailableException;
@@ -18,7 +19,7 @@ import java.io.*;
 import java.io.IOException;
 
 @WebServlet("/currency/*")
-public class CurrencyServlet extends HttpServlet {
+public class CurrencyServlet extends HttpServlet implements errorWriter{
     private final CurrencyService currencyService = CurrencyService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Override
@@ -30,17 +31,11 @@ public class CurrencyServlet extends HttpServlet {
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(currencyDTO));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (CurrencyDoesntExistException e) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_NOT_FOUND, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         } catch (InvalidInputException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         } finally {
             writer.close();
         }

@@ -20,7 +20,7 @@ import java.util.List;
 
 
 @WebServlet("/currencies")
-public class CurrenciesServlet extends HttpServlet {
+public class CurrenciesServlet extends HttpServlet implements errorWriter{
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     @Override
@@ -31,9 +31,7 @@ public class CurrenciesServlet extends HttpServlet {
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(currenciesDto));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } finally {
             writer.close();
         }
@@ -51,17 +49,11 @@ public class CurrenciesServlet extends HttpServlet {
             CurrencyDTO savedCurrencyDTO = currencyService.save(currencyDTO);
             writer.write(objectMapper.writeValueAsString(savedCurrencyDTO));
         } catch (DatabaseNotAvailableException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (InvalidInputException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         } catch (CurrencyAlreadyExistsException e) {
-            resp.setStatus(HttpServletResponse.SC_CONFLICT);
-            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(HttpServletResponse.SC_CONFLICT, e.getMessage());
-            writer.write(objectMapper.writeValueAsString(errorResponseDTO));
+            writeError(resp, writer, HttpServletResponse.SC_CONFLICT, e, objectMapper);
         } finally {
             writer.close();
         }

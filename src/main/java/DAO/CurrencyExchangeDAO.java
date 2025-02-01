@@ -87,14 +87,18 @@ public class CurrencyExchangeDAO {
             throw new DatabaseNotAvailableException("The database could not be accessed");
         }
     }
-    public boolean update(String baseCurrencyCode, String targetCurrencyCode, BigDecimal rate) {
+    public ExchangeRate update(ExchangeRate exchangeRate, BigDecimal rate) {
         try (Connection connection = ConnectionPool.get();
              PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_SQL)){
             preparedStatement.setBigDecimal(1, rate);
-            preparedStatement.setString(2, baseCurrencyCode);
-            preparedStatement.setString(3, targetCurrencyCode);
+            preparedStatement.setString(2, exchangeRate.getBaseCurrency().getCode());
+            preparedStatement.setString(3, exchangeRate.getTargetCurrency().getCode());
             int result = preparedStatement.executeUpdate();
-            return result > 0;
+            if (result > 0) {
+                exchangeRate.setRate(rate);
+                return exchangeRate;
+            }
+            return exchangeRate;
         } catch (SQLException e) {
             throw new DatabaseNotAvailableException("The database could not be accessed");
         }

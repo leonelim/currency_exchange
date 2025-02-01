@@ -61,7 +61,7 @@ public class CurrencyExchangeService {
         Optional<ExchangeRate> optionalInverseExchangeRate = currencyExchangeDAO.get(targetCurrencyCode, baseCurrencyCode);
         if (optionalInverseExchangeRate.isPresent()) {
             ExchangeRate inverseExchangeRate = optionalInverseExchangeRate.get();
-            BigDecimal inverseRate = BigDecimal.ONE.divide(inverseExchangeRate.getRate(), RoundingMode.HALF_UP);
+            BigDecimal inverseRate = BigDecimal.ONE.divide(inverseExchangeRate.getRate(), 6, RoundingMode.HALF_UP);
             BigDecimal convertedAmount = inverseRate.multiply(moneyAmount);
             return new ExchangeResultDTO(currencyMapper.toDto(inverseExchangeRate.getTargetCurrency()), currencyMapper.toDto(inverseExchangeRate.getBaseCurrency()), inverseRate, moneyAmount, convertedAmount);
         }
@@ -70,7 +70,7 @@ public class CurrencyExchangeService {
         if (optionalExchangeRateUSDBase.isPresent() && optionalExchangeRateUSDTarget.isPresent()) {
             ExchangeRate exchangeRateUSDBase = optionalExchangeRateUSDBase.get();
             ExchangeRate exchangeRateUSDTarget = optionalExchangeRateUSDTarget.get();
-            BigDecimal rate = exchangeRateUSDBase.getRate().divide(exchangeRateUSDTarget.getRate(), RoundingMode.HALF_UP);
+            BigDecimal rate = exchangeRateUSDBase.getRate().divide(exchangeRateUSDTarget.getRate(), 6, RoundingMode.HALF_UP);
             BigDecimal convertedAmount = moneyAmount.multiply(rate);
             return new ExchangeResultDTO(currencyMapper.toDto(exchangeRateUSDBase.getTargetCurrency()), currencyMapper.toDto(exchangeRateUSDTarget.getTargetCurrency()), rate, moneyAmount, convertedAmount);
         }
@@ -102,7 +102,7 @@ public class CurrencyExchangeService {
         ExchangeRate savedExchangeRate = currencyExchangeDAO.save(exchangeRate);
         return exchangeRateMapper.toDTO(savedExchangeRate);
     }
-    public boolean update(String baseCurrencyCode, String targetCurrencyCode, String rate) {
+    public ExchangeRateDTO update(String baseCurrencyCode, String targetCurrencyCode, String rate) {
         Optional<ExchangeRate> optionalExchangeRate = currencyExchangeDAO.get(baseCurrencyCode, targetCurrencyCode);
         if (optionalExchangeRate.isEmpty()) {
             throw new InvalidInputException("The exchange rate doesn't exist");
@@ -110,7 +110,7 @@ public class CurrencyExchangeService {
         if (!exchangeRateValidator.isValidRate(rate)) {
             throw new InvalidInputException("Invalid rate");
         }
-        boolean isSuccessfulUpdate = currencyExchangeDAO.update(baseCurrencyCode, targetCurrencyCode, new BigDecimal(rate));
-        return isSuccessfulUpdate;
+        ExchangeRate updatedExchangeRate = currencyExchangeDAO.update(optionalExchangeRate.get(), new BigDecimal(rate));
+        return exchangeRateMapper.toDTO(updatedExchangeRate);
     }
 }
