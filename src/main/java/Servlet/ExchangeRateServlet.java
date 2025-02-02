@@ -16,11 +16,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import javax.xml.crypto.Data;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 @WebServlet("/exchangeRate/*")
-public class ExchangeRateServlet extends HttpServlet implements errorWriter{
+public class ExchangeRateServlet extends HttpServlet implements errorWriter {
     CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -28,7 +31,7 @@ public class ExchangeRateServlet extends HttpServlet implements errorWriter{
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         if (req.getMethod().equalsIgnoreCase("PATCH")) {
-            doPatch(req, resp);
+            this.doPatch(req, resp);
         } else {
             super.service(req, resp);
         }
@@ -59,15 +62,24 @@ public class ExchangeRateServlet extends HttpServlet implements errorWriter{
         PrintWriter writer = resp.getWriter();
         resp.setContentType("application/json");
         try {
+            BufferedReader reader = req.getReader();
+            StringBuilder stringBuilder = new StringBuilder();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+            String rate = stringBuilder.toString().substring(5);
+            reader.close();
             String path = req.getPathInfo();
             String baseCurrencyCode = path.substring(1, 4);
             String targetCurrencyCode = path.substring(4);
-            String rate = req.getParameter("rate");
             ExchangeRateDTO exchangeRate = currencyExchangeService.update(baseCurrencyCode, targetCurrencyCode, rate);
             writer.write(objectMapper.writeValueAsString(exchangeRate));
-        } catch (InvalidInputException e) {
+        } catch (
+                InvalidInputException e) {
             writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
-        } catch (DatabaseNotAvailableException e) {
+        } catch (
+                DatabaseNotAvailableException e) {
             writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         }
     }

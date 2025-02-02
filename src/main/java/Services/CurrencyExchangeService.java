@@ -11,6 +11,7 @@ import Entity.ExchangeResult;
 import exceptions.ExchangeRateDoesntExistsException;
 import exceptions.InvalidInputException;
 import exceptions.NoExchangeRateFoundException;
+import exceptions.SameCurrencyException;
 import mapper.CurrencyMapper;
 import mapper.ExchangeRateMapper;
 import validation.CurrencyValidator;
@@ -51,6 +52,9 @@ public class CurrencyExchangeService {
         throw new ExchangeRateDoesntExistsException("The exchange rate could not be found");
     }
     public ExchangeResultDTO currencyExchange(String baseCurrencyCode, String targetCurrencyCode, String amount) {
+        if (baseCurrencyCode.equals(targetCurrencyCode)) {
+            throw new SameCurrencyException("Base currency code and target currency code are the same");
+        }
         Optional<ExchangeRate> optionalExchangeRate = currencyExchangeDAO.get(baseCurrencyCode, targetCurrencyCode);
         BigDecimal moneyAmount = new BigDecimal(amount);
         if (optionalExchangeRate.isPresent()) {
@@ -74,7 +78,7 @@ public class CurrencyExchangeService {
             BigDecimal convertedAmount = moneyAmount.multiply(rate);
             return new ExchangeResultDTO(currencyMapper.toDto(exchangeRateUSDBase.getTargetCurrency()), currencyMapper.toDto(exchangeRateUSDTarget.getTargetCurrency()), rate, moneyAmount, convertedAmount);
         }
-        throw new NoExchangeRateFoundException("Failed to convert currency");
+        throw new NoExchangeRateFoundException("No exchange rate was found to make a conversion");
     }
     public ExchangeRateDTO save(String baseCurrencyCode, String targetCurrencyCode, String rate) {
         List<String> errorMessages = new ArrayList<>();
