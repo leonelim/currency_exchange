@@ -3,11 +3,10 @@ package utils;
 import org.apache.commons.dbcp.BasicDataSource;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import exceptions.DatabaseNotAvailableException;
+import exceptions.DatabaseCouldNotBeAccessedException;
 
 public class ConnectionPool {
     private static final BasicDataSource dataSource = new BasicDataSource();
@@ -26,7 +25,7 @@ public class ConnectionPool {
             statement.execute("PRAGMA foreign_keys = ON");
             return connection;
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("Could not connect to the database");
+            throw new DatabaseCouldNotBeAccessedException("Could not connect to the database");
         }
     }
     private ConnectionPool() {}

@@ -7,8 +7,8 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.PrintWriter;
 
-public interface errorWriter {
-   default void writeError(HttpServletResponse response, PrintWriter writer, int statusCode, RuntimeException exception, ObjectMapper objectMapper) throws JsonProcessingException {
+public class ErrorWriter {
+   public static void write(HttpServletResponse response, PrintWriter writer, int statusCode, RuntimeException exception, ObjectMapper objectMapper) throws JsonProcessingException {
         response.setStatus(statusCode);
         ErrorResponseDTO message = new ErrorResponseDTO(exception.getMessage());
         writer.write(objectMapper.writeValueAsString(message));

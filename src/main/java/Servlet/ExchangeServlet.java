@@ -1,10 +1,9 @@
 package Servlet;
 
-import DTO.ErrorResponseDTO;
 import DTO.ExchangeResultDTO;
 import Services.CurrencyExchangeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import exceptions.DatabaseNotAvailableException;
+import exceptions.DatabaseCouldNotBeAccessedException;
 import exceptions.NoExchangeRateFoundException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,7 +15,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 @WebServlet("/exchange")
-public class ExchangeServlet extends HttpServlet implements errorWriter {
+public class ExchangeServlet extends HttpServlet {
     CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     ObjectMapper objectMapper = new ObjectMapper();
     @Override
@@ -29,10 +28,10 @@ public class ExchangeServlet extends HttpServlet implements errorWriter {
             resp.setContentType("application/json");
             ExchangeResultDTO exchangeResultDTO = currencyExchangeService.currencyExchange(baseCurrencyCode, targetCurrencyCode, amount);
             writer.write(objectMapper.writeValueAsString(exchangeResultDTO))    ;
-        } catch (DatabaseNotAvailableException e) {
-            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
+        } catch (DatabaseCouldNotBeAccessedException e) {
+            ErrorWriter.write(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (NoExchangeRateFoundException e) {
-            writeError(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
+            ErrorWriter.write(resp, writer, HttpServletResponse.SC_NOT_FOUND, e, objectMapper);
         }
     }
 }

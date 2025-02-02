@@ -1,7 +1,7 @@
 package DAO;
 
 import Entity.Currency;
-import exceptions.DatabaseNotAvailableException;
+import exceptions.DatabaseCouldNotBeAccessedException;
 import utils.ConnectionPool;
 
 import java.sql.*;
@@ -28,7 +28,7 @@ public class CurrencyDAO {
                 currencies.add(makeCurrency(resultSet));
             }
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
         return currencies;
     }
@@ -43,7 +43,7 @@ public class CurrencyDAO {
             }
             return Optional.ofNullable(currency);
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     public Optional<Currency> get(Integer id) {
@@ -56,7 +56,7 @@ public class CurrencyDAO {
             }
             return Optional.ofNullable(currency);
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     public Currency save(Currency currency) {
@@ -72,7 +72,7 @@ public class CurrencyDAO {
             }
             return currency;
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     private Currency makeCurrency(ResultSet resultSet) throws SQLException {

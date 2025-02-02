@@ -2,7 +2,7 @@ package DAO;
 
 import Entity.Currency;
 import Entity.ExchangeRate;
-import exceptions.DatabaseNotAvailableException;
+import exceptions.DatabaseCouldNotBeAccessedException;
 import utils.ConnectionPool;
 
 import java.math.BigDecimal;
@@ -52,7 +52,7 @@ public class CurrencyExchangeDAO {
                 exchangeRates.add(makeExchangeRate(resultSet));
             }
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
         return exchangeRates;
     }
@@ -68,7 +68,7 @@ public class CurrencyExchangeDAO {
             }
             return Optional.ofNullable(exchangeRate);
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     public ExchangeRate save(ExchangeRate exchangeRate) {
@@ -84,7 +84,7 @@ public class CurrencyExchangeDAO {
             }
             return exchangeRate;
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     public ExchangeRate update(ExchangeRate exchangeRate, BigDecimal rate) {
@@ -100,7 +100,7 @@ public class CurrencyExchangeDAO {
             }
             return exchangeRate;
         } catch (SQLException e) {
-            throw new DatabaseNotAvailableException("The database could not be accessed");
+            throw new DatabaseCouldNotBeAccessedException("The database failed to satisfy the request");
         }
     }
     private ExchangeRate makeExchangeRate(ResultSet resultSet) throws SQLException {

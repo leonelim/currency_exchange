@@ -27,29 +27,29 @@ public class CurrencyService {
     }
     public CurrencyDTO get(String code) {
         if (!currencyValidator.isValidCode(code)) {
-            throw new InvalidInputException("The provided code is invalid, a code should consist of 3 letters of the latin alphabet");
+            throw new InvalidInputException("Code should consist of 3 letters of the latin alphabet");
         }
         Optional<Currency> optionalCurrency = currencyDAO.get(code);
-        Currency currency = optionalCurrency.orElseThrow(() -> new CurrencyDoesntExistException("The currency with the code" + code + "could not be found"));
+        Currency currency = optionalCurrency.orElseThrow(() -> new CurrencyDoesntExistException("Currency with the code" + code + "could not be found"));
         return currencyMapper.toDto(currency);
     }
     public CurrencyDTO save(CurrencyDTO currencyDTO) {
         List<String> errorMessages = new ArrayList<>();
         if (!currencyValidator.isValidCode(currencyDTO.code())) {
-            errorMessages.add("The code should consist of 3 letters of the latin alphabet");
+            errorMessages.add("Code should consist of 3 letters of the latin alphabet");
         }
         if (!currencyValidator.isValidName(currencyDTO.name())) {
-            errorMessages.add("The name should be between 3 and 30 letters of the latin alphabet long");
+            errorMessages.add("Name should be between 3 and 30 letters of the latin alphabet long");
         }
         if (!currencyValidator.isValidSign(currencyDTO.sign())) {
-            errorMessages.add("The sign should not be longer than 3 symbols");
+            errorMessages.add("Sign should not be longer than 3 symbols");
         }
         if (!errorMessages.isEmpty()) {
             throw new InvalidInputException(String.join(" ", errorMessages));
         }
         Optional<Currency> optionalCurrency = currencyDAO.get(currencyDTO.code());
         if (optionalCurrency.isPresent()) {
-            throw new CurrencyAlreadyExistsException("A currency with the code" + currencyDTO.code() + "already exists");
+            throw new CurrencyAlreadyExistsException("Currency with the code" + currencyDTO.code() + "already exists");
         }
         Currency currency = currencyDAO.save(currencyMapper.toEntity(currencyDTO));
         return currencyMapper.toDto(currency);

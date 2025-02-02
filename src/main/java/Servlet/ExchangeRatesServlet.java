@@ -1,12 +1,10 @@
 package Servlet;
 
-import DTO.ErrorResponseDTO;
 import DTO.ExchangeRateDTO;
-import Entity.ExchangeRate;
 import Services.CurrencyExchangeService;
 import Services.CurrencyService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import exceptions.DatabaseNotAvailableException;
+import exceptions.DatabaseCouldNotBeAccessedException;
 import exceptions.InvalidInputException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -16,11 +14,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.math.BigDecimal;
 import java.util.List;
 
 @WebServlet("/exchangeRates")
-public class ExchangeRatesServlet extends HttpServlet implements errorWriter {
+public class ExchangeRatesServlet extends HttpServlet {
     private final CurrencyExchangeService currencyExchangeService = CurrencyExchangeService.getInstance();
     private final CurrencyService currencyService = CurrencyService.getInstance();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -31,8 +28,8 @@ public class ExchangeRatesServlet extends HttpServlet implements errorWriter {
             List<ExchangeRateDTO> exchangeRates = currencyExchangeService.getAll();
             resp.setContentType("application/json");
             writer.write(objectMapper.writeValueAsString(exchangeRates));
-        } catch (DatabaseNotAvailableException e) {
-            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
+        } catch (DatabaseCouldNotBeAccessedException e) {
+            ErrorWriter.write(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         }
     }
 
@@ -46,10 +43,10 @@ public class ExchangeRatesServlet extends HttpServlet implements errorWriter {
             resp.setContentType("application/json");
             ExchangeRateDTO exchangeRateDTO = currencyExchangeService.save(baseCurrencyCode, targetCurrencyCode, rate);
             writer.write(objectMapper.writeValueAsString(exchangeRateDTO));
-        } catch (DatabaseNotAvailableException e) {
-            writeError(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
+        } catch (DatabaseCouldNotBeAccessedException e) {
+            ErrorWriter.write(resp, writer, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e, objectMapper);
         } catch (InvalidInputException e) {
-            writeError(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
+            ErrorWriter.write(resp, writer, HttpServletResponse.SC_BAD_REQUEST, e, objectMapper);
         }
     }
 }
